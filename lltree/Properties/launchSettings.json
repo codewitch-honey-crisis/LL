@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "lltree": {
+      "commandName": "Project",
+      "commandLineArgs": "..\\..\\..\\ebnf.ebnf ..\\..\\..\\ebnf.ebnf"
+    }
+  }
+}

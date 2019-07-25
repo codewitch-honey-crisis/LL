@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "llgen": {
+      "commandName": "Project",
+      "commandLineArgs": "..\\..\\..\\ebnf.ebnf ..\\..\\..\\Ebnf.cs /namespace LL"
+    }
+  }
+}

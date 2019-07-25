@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "lltest": {
+      "commandName": "Project",
+      "commandLineArgs": "..\\..\\..\\working.ebnf ..\\..\\..\\working.ebnf"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ll\Runtimes\LL1TableParser.cs" Link="LL1TableParser.cs" />
+    <Compile Include="..\ll\Runtimes\ParseNode.cs" Link="ParseNode.cs" />
+    <Compile Include="..\ll\Runtimes\Parser.cs" Link="Parser.cs" />
+    <Compile Include="..\ll\Runtimes\TableTokenizer.cs" Link="TableTokenizer.cs" />
+    <Compile Include="..\ll\Runtimes\TextReaderEnumerable.cs" Link="TextReaderEnumerable.cs" />
+    <Compile Include="..\ll\Runtimes\Token.cs" Link="Token.cs" />
+  </ItemGroup>
+
+</Project>
