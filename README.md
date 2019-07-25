@@ -16,6 +16,8 @@ This repository contains several projects
 
 * **lltest** - one of my tests written as a command line utility.
 
+* **llscratch** - just a place to experiment
+
 The *DebugLL1Parser* and *DebugTokenizer* classes use only strings for internal information so seeing what they do in the debugger is easy. I use these to prototype changes to the parser and lexer algorithms before baking those changes into the *LL1TableParser* and *TableTokenizer* classes.
 
 Cfg and Ebnf are both pretty enormous and contain APIs for manipulating CFGs and EBNF documents. The latter exposes a full DOM object model.
