@@ -16,19 +16,7 @@ namespace LL
 		}
 		static int Main(string[] args)
 		{
-			var cfg = Cfg.Parse(
-				"S -> A b\n"+
-				"A -> b\n"+
-				"A ->\n");
-			cfg.StartSymbol = "S";
-			Console.WriteLine(cfg);
-			foreach (var msg in cfg.PrepareLL1(false))
-			{
-				Console.WriteLine(msg);
-			}
-			Console.WriteLine(cfg);
-			cfg.ToLL1ParseTable();
-			return 0;
+			Cfg cfg;
 			if(2!=args.Length)
 			{
 				_PrintUsage();
