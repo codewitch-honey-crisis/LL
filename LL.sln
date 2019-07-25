@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "llrt", "llrt\llrt.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "llvstudio", "llvstudio\llvstudio.csproj", "{0F523733-A3F9-46C9-A974-D34959EC8380}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lltree", "lltree\lltree.csproj", "{E68F86E5-0926-4293-953E-D35893357598}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "lltree", "lltree\lltree.csproj", "{E68F86E5-0926-4293-953E-D35893357598}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "llscratch", "llscratch\llscratch.csproj", "{E37DCFF8-475D-4ACF-8C4B-A6E508241A58}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{E68F86E5-0926-4293-953E-D35893357598}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E68F86E5-0926-4293-953E-D35893357598}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E68F86E5-0926-4293-953E-D35893357598}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E37DCFF8-475D-4ACF-8C4B-A6E508241A58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E37DCFF8-475D-4ACF-8C4B-A6E508241A58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E37DCFF8-475D-4ACF-8C4B-A6E508241A58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E37DCFF8-475D-4ACF-8C4B-A6E508241A58}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

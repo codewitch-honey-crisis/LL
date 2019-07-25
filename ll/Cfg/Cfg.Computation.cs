@@ -7,6 +7,32 @@ namespace LL
 {
 	partial class Cfg
 	{
+		public IList<IList<string>> ExpandRights(IList<IList<string>> rights)
+		{
+			var result = new List<IList<string>>(rights);
+			for(int ic=rights.Count,i=0;i<ic;++i)
+			{
+				var right = rights[i];
+				for(int jc=right.Count,j=0;j<jc;++j)
+				{
+					var sym = right[j];
+					if(IsNonTerminal(sym))
+					{
+						result.Remove(right);
+						var ntr = FillNonTerminalRules(sym);
+						for(int kc=ntr.Count,k=0;k<kc;++k)
+						{
+							var ntrr = ntr[k];
+							var newRight = new List<string>(right.Replace(sym, ntrr.Right));
+							if (!result.Contains(newRight, OrderedCollectionEqualityComparer<string>.Default))
+								result.Add(newRight);
+						}
+						break;
+					}
+				}
+			}
+			return result;
+		}
 		public IList<CfgRule> FillReferencesToSymbol(string symbol, IList<CfgRule> result = null)
 		{
 			if (null == result)
