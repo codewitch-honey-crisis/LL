@@ -16,10 +16,10 @@ namespace LL
 				CfgException.ThrowIfErrors(result);
 			return result;
 		}
-		public IList<CfgLLConflict> FillLLConflicts(IList<CfgLLConflict> result = null)
+		public IList<CfgConflict> FillConflicts(IList<CfgConflict> result = null)
 		{
 			if (null == result)
-				result = new List<CfgLLConflict>();
+				result = new List<CfgConflict>();
 			// build a temporary parse table to check for conflicts
 			var predict = FillPredict();
 			var follows = FillFollows();
@@ -34,7 +34,7 @@ namespace LL
 						CfgRule r;
 						if (d.TryGetValue(f.Symbol, out r) && r != f.Rule)
 						{
-							var cf = new CfgLLConflict(CfgConflictKind.FirstFirst, r, f.Rule, f.Symbol);
+							var cf = new CfgConflict(CfgConflictKind.FirstFirst, r, f.Rule, f.Symbol);
 							if (!result.Contains(cf))
 								result.Add(cf);
 						}
@@ -48,7 +48,7 @@ namespace LL
 							CfgRule r;
 							if (d.TryGetValue(ff, out r) && r != f.Rule)
 							{
-								var cf = new CfgLLConflict(CfgConflictKind.FirstFollows, r, f.Rule, ff);
+								var cf = new CfgConflict(CfgConflictKind.FirstFollows, r, f.Rule, ff);
 								if (!result.Contains(cf))
 									result.Add(cf);
 							}

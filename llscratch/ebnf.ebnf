@@ -20,7 +20,7 @@ production= identifier [ "<" attributes ">" ] "=" expressions ";";
 // expressions
 //
 expressions<collapsed>= expression "|" expressions | expression;
-expression= { symbol }+ |;
+expression= { symbol };
 symbol= literal | regex | identifier | 
 	"(" expressions ")" | 
 	"[" expressions "]" |

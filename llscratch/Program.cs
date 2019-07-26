@@ -9,16 +9,19 @@ namespace LL
 		{
 			var ebnf = EbnfDocument.ReadFrom(@"..\..\..\ebnf.ebnf");
 			var cfg = ebnf.ToCfg();
-			IList<IList<string>> rights = new List<IList<string>>();
-			rights.Add(cfg.Rules[0].Right);
-			_WriteRights(rights);
-			for(var i = 0; i<10;++i)
+			cfg.PrepareLL1(false);
+			Console.WriteLine(cfg.ToString());
+
+			var conflicts = cfg.FillConflicts();
+			foreach(var conflict in conflicts)
 			{
-				rights = cfg.ExpandRights(rights);
+				if (CfgConflictKind.FirstFirst == conflict.Kind)
+				{
+					Console.Write("Rule {0} conflicts with {1} on {2}, k-value of ", conflict.Rule1, conflict.Rule2, conflict.Symbol);
+					Console.WriteLine(cfg.GetK(conflict.Rule1, conflict.Rule2));
+				}
 			}
-			_WriteRights(rights);
-
-
+			
 		}
 		static void _WriteRights(IList<IList<string>> rights)
 		{

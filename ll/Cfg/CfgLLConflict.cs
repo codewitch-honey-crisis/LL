@@ -9,9 +9,9 @@ namespace LL
 		FirstFirst=0,
 		FirstFollows=1
 	}
-	public sealed class CfgLLConflict : IEquatable<CfgLLConflict>, ICloneable
+	public sealed class CfgConflict : IEquatable<CfgConflict>, ICloneable
 	{
-		public CfgLLConflict(CfgConflictKind kind,CfgRule rule1,CfgRule rule2,string symbol)
+		public CfgConflict(CfgConflictKind kind,CfgRule rule1,CfgRule rule2,string symbol)
 		{
 			if (null == rule1) throw new ArgumentNullException("rule1");
 			if (null == rule2) throw new ArgumentNullException("rule2");
@@ -24,7 +24,7 @@ namespace LL
 		public CfgRule Rule1 { get; }
 		public CfgRule Rule2 { get; }
 		public string Symbol { get; }
-		public bool Equals(CfgLLConflict rhs)
+		public bool Equals(CfgConflict rhs)
 		{
 			if (ReferenceEquals(this, rhs)) return true;
 			if (ReferenceEquals(null, rhs)) return false;
@@ -37,7 +37,7 @@ namespace LL
 			return false;
 		}
 		public override bool Equals(object obj)
-			=> Equals(obj as CfgLLConflict);
+			=> Equals(obj as CfgConflict);
 		public override int GetHashCode()
 		{
 			var result = 0;
@@ -47,7 +47,7 @@ namespace LL
 			result ^= Symbol.GetHashCode();
 			return result;
 		}
-		public static bool operator ==(CfgLLConflict lhs, CfgLLConflict rhs)
+		public static bool operator ==(CfgConflict lhs, CfgConflict rhs)
 		{
 			if (ReferenceEquals(lhs, rhs))
 				return true;
@@ -55,7 +55,7 @@ namespace LL
 				return false;
 			return lhs.Equals(rhs);
 		}
-		public static bool operator !=(CfgLLConflict lhs, CfgLLConflict rhs)
+		public static bool operator !=(CfgConflict lhs, CfgConflict rhs)
 		{
 			if (ReferenceEquals(lhs, rhs))
 				return false;
@@ -63,9 +63,9 @@ namespace LL
 				return true;
 			return !lhs.Equals(rhs);
 		}
-		public CfgLLConflict Clone()
+		public CfgConflict Clone()
 		{
-			return new CfgLLConflict(Kind, Rule1,Rule2,Symbol);
+			return new CfgConflict(Kind, Rule1,Rule2,Symbol);
 		}
 		object ICloneable.Clone() => Clone();
 	}

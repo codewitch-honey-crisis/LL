@@ -33,6 +33,43 @@ namespace LL
 			}
 			return result;
 		}
+		public IList<IList<string>> ExpandRights(IList<IList<string>> rights,int toK, int maxIterations=10)
+		{
+			if (0 == toK) return rights;
+			var again = true;
+			while (again)
+			{
+				again = false;
+				for(int ic=rights.Count,i=0;i<ic;++i)
+				{
+					var right = rights[i];
+					for(int jc=Math.Min(toK,right.Count),j=0;j<jc;++j)
+					{
+						var sym = right[j];
+						if(IsNonTerminal(sym))
+						{
+							again = true;
+							break;
+						}
+					}
+				}
+				if (again)
+					rights = ExpandRights(rights);
+				--maxIterations;
+				if (1> maxIterations)
+					break;
+			}
+			var result = new List<IList<string>>(rights.Count);
+			for(int ic = rights.Count,i=0;i<ic;++i)
+			{
+				var right = rights[i].Range(0,toK);
+				var r = new List<string>(right);
+				if (!result.Contains(r,OrderedCollectionEqualityComparer<string>.Default))
+					result.Add(r);
+				
+			}
+			return result;
+		}
 		public IList<CfgRule> FillReferencesToSymbol(string symbol, IList<CfgRule> result = null)
 		{
 			if (null == result)
@@ -45,6 +82,26 @@ namespace LL
 						result.Add(rule);
 			}
 			return result;
+		}
+		bool _AreDistinct(IList<IList<string>> left,IList<IList<string>> right)
+		{
+			for(int ic=left.Count,i=0;i<ic;++i)
+				if (right.Contains(left[i], OrderedCollectionEqualityComparer<string>.Default))
+					return false;
+			return true;
+		}
+		public int GetK(CfgRule left,CfgRule right,int maxK = 20)
+		{
+			var lleft = new List<IList<string>>();
+			lleft.Add(left.Right);
+			var lright = new List<IList<string>>();
+			lright.Add(right.Right);
+			for(int i = 1;i<maxK;++i)
+			{
+				if (_AreDistinct(ExpandRights(lleft, i), ExpandRights(lright, i)))
+					return i;
+			}
+			return -1;
 		}
 		public IDictionary<string,ICollection<(CfgRule,IList<string> Symbols)>> FillPredictK(int k, IDictionary<string, ICollection<(CfgRule, IList<string> Symbols)>> result = null)
 		{

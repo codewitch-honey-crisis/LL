@@ -6,14 +6,14 @@ namespace LL
 {
 	partial class Cfg
 	{
-		static bool _HasFirstFirstConflicts(IList<CfgLLConflict> conflicts)
+		static bool _HasFirstFirstConflicts(IList<CfgConflict> conflicts)
 		{
 			for(int ic=conflicts.Count, i = 0;i<ic;++i)
 				if (CfgConflictKind.FirstFirst == conflicts[i].Kind)
 					return true;
 			return false;
 		}
-		static bool _HasFirstFollowsConflicts(IList<CfgLLConflict> conflicts)
+		static bool _HasFirstFollowsConflicts(IList<CfgConflict> conflicts)
 		{
 			for (int ic = conflicts.Count, i = 0; i < ic; ++i)
 				if (CfgConflictKind.FirstFollows == conflicts[i].Kind)
@@ -32,14 +32,14 @@ namespace LL
 			{
 				if (IsDirectlyLeftRecursive)
 					result.AddRange(EliminateLeftRecursion());
-				var cc = FillLLConflicts();
+				var cc = FillConflicts();
 				if (_HasFirstFollowsConflicts(cc))
 					result.AddRange(EliminateFirstFollowsConflicts());
-				cc = FillLLConflicts();
+				cc = FillConflicts();
 				if(_HasFirstFirstConflicts(cc))
 					result.AddRange(EliminateFirstFirstConflicts());
 				//result.AddRange(EliminateUnderivableRules());
-				cc = FillLLConflicts();
+				cc = FillConflicts();
 				if (0 == cc.Count && !IsDirectlyLeftRecursive)
 					break;
 				if (old.Equals(this))
@@ -50,7 +50,7 @@ namespace LL
 				result.Add(new CfgMessage(CfgErrorLevel.Error, -1, "Grammar is unresolvably and directly left recursive and cannot be parsed with an LL parser."));
 			//else if (IsLeftRecursive())
 			//	result.Add(new CfgMessage(CfgErrorLevel.Error, -1, "Grammar is unresolvably and indirectly left recursive and cannot be parsed with an LL parser."));
-			var fc = FillLLConflicts();
+			var fc = FillConflicts();
 			foreach (var f in fc)
 				result.Add(new CfgMessage(CfgErrorLevel.Error, -1, string.Format("Grammar has unresolvable first-{0} conflict between {1} and {2} on symbol {3}",f.Kind==CfgConflictKind.FirstFirst?"first":"follows",f.Rule1,f.Rule2,f.Symbol)));
 			FillValidate(throwIfErrors, result);
@@ -112,7 +112,7 @@ namespace LL
 		public IList<CfgMessage> EliminateFirstFollowsConflicts()
 		{
 			var result = new List<CfgMessage>();
-			var conflicts = FillLLConflicts();
+			var conflicts = FillConflicts();
 			for(int ic=conflicts.Count,i=0;i<ic;++i)
 			{
 				var conflict = conflicts[i];
