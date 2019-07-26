@@ -643,6 +643,12 @@ namespace LL
 			foreach (var item in values)
 				collection.Add(item);
 		}
+		public static void AddRangeUnique<T>(this ICollection<T> collection, IEnumerable<T> values)
+		{
+			foreach (var item in values)
+				if(!collection.Contains(item))
+					collection.Add(item);
+		}
 		public static IEnumerable<T> NonNulls<T>(this IEnumerable<T> collection)
 		{
 			foreach (var item in collection)
