@@ -377,6 +377,7 @@ namespace LL
 			var dfaTable = lexer.ToDfaTable(sm);
 			return new TableTokenizer(dfaTable, tt.ToArray(), bes, input);
 		}
+		
 		public Cfg ToCfg()
 		{
 			var result = new Cfg();

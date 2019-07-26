@@ -39,6 +39,16 @@ namespace LL
 					Console.Error.WriteLine(msg);
 				}
 			}
+
+			foreach (var msg in ebnf.Prepare(false))
+			{
+				if (EbnfErrorLevel.Error == msg.ErrorLevel)
+				{
+					hasErrors = true;
+					Console.Error.WriteLine(msg);
+				}
+			}
+
 			// even if we have errors, we keep going.
 
 			// create a CFG from the EBNF document
