@@ -217,7 +217,7 @@ namespace LL
 							expr.Line, expr.Column, expr.Position));
 				}
 				var i = GetIdForExpression(rx);
-				if (null != i && !ReferenceEquals(Productions[i].Expression, l))
+				if (!string.IsNullOrEmpty(i) && !ReferenceEquals(Productions[i].Expression, l))
 					refCounts[i] += 1;
 			}
 			var r = expr as EbnfRefExpression;
@@ -619,7 +619,7 @@ namespace LL
 			}
 			var l = pc.CaptureBuffer.Length;
 			if ('_' != pc.Current && !char.IsLetter((char)pc.Current))
-				pc.Expecting("ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz".ToCharArray().Cast<int>().ToArray());
+				pc.Expecting("ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz".ToCharArray().Convert<int>().ToArray());
 			pc.CaptureCurrent();
 			while (-1 != pc.Advance() && ('_' == pc.Current || '-' == pc.Current || char.IsLetterOrDigit((char)pc.Current)))
 				pc.CaptureCurrent();
