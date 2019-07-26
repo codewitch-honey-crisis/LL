@@ -60,7 +60,7 @@ namespace LL
 		public EbnfOrExpression Clone()
 		{
 			var result = new EbnfOrExpression(null != Left ? ((ICloneable)Left).Clone() as EbnfExpression : null, null != Right ? ((ICloneable)Right).Clone() as EbnfExpression : null);
-			result.SetPositionInfo(Line, Column, Position);
+			result.SetLocationInfo(Line, Column, Position);
 			return result;
 		}
 		object ICloneable.Clone() => Clone();

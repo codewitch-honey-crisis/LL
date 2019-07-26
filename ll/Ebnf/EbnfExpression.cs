@@ -19,7 +19,7 @@ namespace LL
 		{
 			return new EbnfRefExpression(rhs);
 		}
-		public void SetPositionInfo(int line, int column, long position)
+		public void SetLocationInfo(int line, int column, long position)
 		{
 			Line = line;
 			Column = column;

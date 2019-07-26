@@ -467,7 +467,7 @@ namespace LL
 				prod.Expression = new EbnfOrExpression(prod.Expression, expr);
 			else
 				prod.Expression= expr;
-			prod.SetPositionInfo(line, column, position);
+			prod.SetLocationInfo(line, column, position);
 		}
 		static EbnfExpression _ParseExpression(EbnfDocument doc, ParseContext pc)
 		{
@@ -487,15 +487,15 @@ namespace LL
 					case '|':
 						pc.Advance();
 						current = new EbnfOrExpression(current, _ParseExpression(doc, pc));
-						current.SetPositionInfo(line, column, position);
+						current.SetLocationInfo(line, column, position);
 						break;
 					case '(':
 						pc.Advance();
 						e = _ParseExpression(doc, pc);
-						current.SetPositionInfo(line, column, position);
+						current.SetLocationInfo(line, column, position);
 						pc.Expecting(')');
 						pc.Advance();
-						e.SetPositionInfo(line, column, position);
+						e.SetLocationInfo(line, column, position);
 						if (null == current)
 							current = e;
 						else
@@ -505,7 +505,7 @@ namespace LL
 					case '[':
 						pc.Advance();
 						e = new EbnfOptionalExpression(_ParseExpression(doc, pc));
-						e.SetPositionInfo(line, column, position);
+						e.SetLocationInfo(line, column, position);
 						pc.TrySkipCCommentsAndWhiteSpace();
 						pc.Expecting(']');
 						pc.Advance();
@@ -518,7 +518,7 @@ namespace LL
 					case '{':
 						pc.Advance();
 						e = new EbnfRepeatExpression(_ParseExpression(doc, pc));
-						e.SetPositionInfo(line, column, position);
+						e.SetLocationInfo(line, column, position);
 						pc.TrySkipCCommentsAndWhiteSpace();
 						pc.Expecting('}');
 						pc.Advance();
@@ -540,7 +540,7 @@ namespace LL
 							current = e;
 						else
 							current = new EbnfConcatExpression(current, e);
-						e.SetPositionInfo(line, column, position);
+						e.SetLocationInfo(line, column, position);
 						break;
 
 					case '\'':
@@ -554,7 +554,7 @@ namespace LL
 							current = e;
 						else
 							current = new EbnfConcatExpression(current, e);
-						e.SetPositionInfo(line, column, position);
+						e.SetLocationInfo(line, column, position);
 						break;
 					case ';':
 					case ']':
@@ -568,7 +568,7 @@ namespace LL
 							current = e;
 						else
 							current = new EbnfConcatExpression(current, e);
-						e.SetPositionInfo(line, column, position);
+						e.SetLocationInfo(line, column, position);
 						break;
 				}
 			}

@@ -163,7 +163,7 @@ namespace LL
 			string name = pn.Children[0].Value;
 			if ("production" == name) Debugger.Break();
 			var prod = new EbnfProduction();
-			prod.SetPositionInfo(pn.Line, pn.Column, pn.Position);
+			prod.SetLocationInfo(pn.Line, pn.Column, pn.Position);
 			var i = 0;
 			if (EbnfParser.lt == pn.Children[1].SymbolId)
 			{

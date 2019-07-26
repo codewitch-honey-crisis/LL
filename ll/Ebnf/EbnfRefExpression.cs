@@ -26,7 +26,7 @@ namespace LL
 		}
 		public EbnfRefExpression Clone() {
 			var result = new EbnfRefExpression(Symbol);
-			result.SetPositionInfo(Line, Column, Position);
+			result.SetLocationInfo(Line, Column, Position);
 			return result;
 		}
 		object ICloneable.Clone() => Clone();

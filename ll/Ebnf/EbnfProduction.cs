@@ -30,7 +30,7 @@ namespace LL
 				return false;
 			}
 		}
-		public void SetPositionInfo(int line, int column, long position)
+		public void SetLocationInfo(int line, int column, long position)
 		{
 			Line = line;
 			Column = column;
@@ -45,7 +45,7 @@ namespace LL
 			foreach(var attr in Attributes)
 				prod.Attributes.Add(attr.Key, attr.Value);
 			prod.Expression = ((ICloneable)Expression).Clone() as EbnfExpression;
-			prod.SetPositionInfo(Line, Column, Position);
+			prod.SetLocationInfo(Line, Column, Position);
 			return prod;
 		}
 		object ICloneable.Clone() => Clone();

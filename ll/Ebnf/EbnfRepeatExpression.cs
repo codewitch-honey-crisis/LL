@@ -73,7 +73,7 @@ namespace LL
 		}
 		public EbnfRepeatExpression Clone() {
 			var result = new EbnfRepeatExpression(Expression);
-			result.SetPositionInfo(Line, Column, Position);
+			result.SetLocationInfo(Line, Column, Position);
 			return result;
 		}
 

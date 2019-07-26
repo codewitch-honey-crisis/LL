@@ -29,7 +29,7 @@ namespace LL
 		public EbnfLiteralExpression Clone()
 		{
 			var result = new EbnfLiteralExpression(Value);
-			result.SetPositionInfo(Line, Column, Position);
+			result.SetLocationInfo(Line, Column, Position);
 			return result;
 		}
 		object ICloneable.Clone() => Clone();

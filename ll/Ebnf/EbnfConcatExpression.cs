@@ -70,7 +70,7 @@ namespace LL
 		public EbnfConcatExpression Clone()
 		{
 			var result = new EbnfConcatExpression(null != Left ? ((ICloneable)Left).Clone() as EbnfExpression : null, null != Right ? ((ICloneable)Right).Clone() as EbnfExpression : null);
-			result.SetPositionInfo(Line, Column, Position);
+			result.SetLocationInfo(Line, Column, Position);
 			return result;
 		}
 		object ICloneable.Clone() => Clone();

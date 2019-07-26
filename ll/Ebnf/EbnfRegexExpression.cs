@@ -32,7 +32,7 @@ namespace LL
 		}
 		public EbnfRegexExpression Clone() {
 			var result = new EbnfRegexExpression(Value);
-			result.SetPositionInfo(Line, Column, Position);
+			result.SetLocationInfo(Line, Column, Position);
 			return result;
 		}
 		object ICloneable.Clone() => Clone();
