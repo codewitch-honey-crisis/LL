@@ -31,28 +31,76 @@ namespace LL
 						break;
 				}
 			}
+			
+			or.Add(seq);
 			result = null;
-			for(int ic=or.Count,i=0;i<ic;++i)
+			switch(or.Count)
 			{
-				var s = or[i];
-				EbnfExpression e = null;
-				switch(s.Count)
-				{
-					case 0:
-						e = null;
-						break;
-					case 1:
-						e = s[0];
-						break;
-					default:
-						for(int jc=s.Count,j=0;j<jc;++j)
+				case 0:
+					result = null;
+					break;
+				case 1:
+					result = _SeqToExpression(or[0]);
+					break;
+				default:
+					var state = 0;
+					var oe = new EbnfOrExpression();
+					for (int ic = or.Count, i = 0; i < ic; ++i)
+					{
+						switch(state)
 						{
-
+							case 0:
+								oe.Left = _SeqToExpression(or[i]);
+								state = 1;
+								break;
+							case 1:
+								oe.Right = _SeqToExpression(or[i]);
+								state = 2;
+								break;
+							case 2:
+								oe = new EbnfOrExpression(oe, null);
+								oe.Right = _SeqToExpression(or[i]);
+								break;
 						}
-						break;
-				}
+					}
+					//if (0 == state || 2 == state)
+					//	result = oe.Left;
+					//else
+						result = oe;
+					break;
 			}
+			
 			return msgs;
+		}
+		static EbnfExpression _SeqToExpression(IList<EbnfExpression> seq)
+		{
+			EbnfExpression result;
+			switch (seq.Count)
+			{
+				case 0:
+					result = null;
+					break;
+				case 1:
+					result = seq[0];
+					break;
+				default:
+					var ce = new EbnfConcatExpression();
+					for (int jc = seq.Count, j = 0; j < jc; ++j)
+					{
+						if (null == ce.Left)
+							ce.Left = seq[j];
+						else if (null == ce.Right)
+							ce.Right = seq[j];
+						if (null != ce.Right)
+							ce = new EbnfConcatExpression(ce, null);
+					}
+					if (null == ce.Right)
+						result = ce.Left;
+					else
+						result = ce;
+					break;
+			}
+			return result;
 		}
 		static IList<EbnfMessage> _TryParseExpression(ParseNode pn,out EbnfExpression result)
 		{
@@ -65,6 +113,7 @@ namespace LL
 				var c = pn.Children[0];
 				if (EbnfParser.symbol == c.SymbolId)
 				{
+					ParseContext pc;
 					var cc = c.Children[0];
 					//TODO: parse the regular expressions and literals to make sure they're valid.
 					switch (cc.SymbolId)
@@ -73,10 +122,18 @@ namespace LL
 							result = new EbnfRefExpression(cc.Value);
 							return msgs;
 						case EbnfParser.regex:
-							result = new EbnfRegexExpression(cc.Value);
+							pc = ParseContext.Create(cc.Value);
+							pc.EnsureStarted();
+							pc.Advance(); 
+							pc.TryReadUntil('\'', '\\', false);
+							result = new EbnfRegexExpression(pc.GetCapture());
 							return msgs;
 						case EbnfParser.literal:
-							result = new EbnfLiteralExpression(cc.Value);
+							pc = ParseContext.Create(cc.Value);
+							pc.EnsureStarted();
+							pc.Advance();
+							pc.TryReadUntil('\"', '\\', false);
+							result = new EbnfLiteralExpression(pc.GetCapture());
 							return msgs;
 						case EbnfParser.lbrace:
 							msgs.AddRange(_TryParseExpressions(c, 1, out result));
@@ -88,6 +145,10 @@ namespace LL
 							msgs.AddRange(_TryParseExpressions(c, 1, out result));
 							result = new EbnfOptionalExpression(result);
 							return msgs;
+						case EbnfParser.lparen:
+							msgs.AddRange(_TryParseExpressions(c, 1, out result));
+							return msgs;
+
 						default:
 							break;
 					}
@@ -100,17 +161,19 @@ namespace LL
 			Debug.Assert(EbnfParser.production == pn.SymbolId, "Not positioned on production");
 			var msgs = new List<EbnfMessage>();
 			string name = pn.Children[0].Value;
+			if ("production" == name) Debugger.Break();
 			var prod = new EbnfProduction();
 			prod.SetPositionInfo(pn.Line, pn.Column, pn.Position);
-			if(EbnfParser.lt==pn.Children[1].SymbolId)
+			var i = 0;
+			if (EbnfParser.lt == pn.Children[1].SymbolId)
 			{
-				var i = 2;
-				while(EbnfParser.gt!=pn.Children[i].SymbolId)
+				i = 2;
+				while (EbnfParser.gt != pn.Children[i].SymbolId)
 				{
 					var attrnode = pn.Children[i];
 					var attrname = attrnode.Children[0].Value;
 					var attrval = (object)true;
-					if (3==attrnode.Children.Count)
+					if (3 == attrnode.Children.Count)
 					{
 						var s = attrnode.Children[2].Children[0].Value;
 						if (!ParseContext.Create(s).TryParseJsonValue(out attrval))
@@ -121,26 +184,13 @@ namespace LL
 					if (EbnfParser.comma == pn.Children[i].SymbolId)
 						++i;
 				}
-				while (EbnfParser.eq != pn.Children[i].SymbolId)
-					++i;
 				++i;
-				var ors = new List<IList<EbnfExpression>>();
-				var seq = new List<EbnfExpression>();
-				while(EbnfParser.semi!=pn.Children[i].SymbolId)
-				{
-					if(EbnfParser.expression==pn.Children[i].SymbolId)
-					{
-						EbnfExpression expr;
-						msgs.AddRange(_TryParseExpression(pn.Children[i], out expr));
-						seq.Add(expr);
-					} else if(EbnfParser.or==pn.Children[i].SymbolId)
-					{
-						ors.Add(seq);
-						seq = new List<EbnfExpression>();
-					}
-					++i;
-				}
 			}
+			++i;
+			EbnfExpression e;
+			_TryParseExpressions(pn, i, out e);
+			prod.Expression = e;
+			
 			result = new KeyValuePair<string, EbnfProduction>(name, prod);
 			return msgs;
 		}

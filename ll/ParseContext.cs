@@ -1542,7 +1542,7 @@ namespace LL
 		{
 			return _captureBuffer.ToString(startIndex, count);
 		}
-		public string GetCapture(int startIndex)
+		public string GetCapture(int startIndex=0)
 		{
 			return _captureBuffer.ToString(startIndex, _captureBuffer.Length - startIndex);
 		}
