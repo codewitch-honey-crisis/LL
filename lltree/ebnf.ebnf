@@ -19,7 +19,7 @@ production= identifier [ "<" attributes ">" ] "=" expressions ";";
 //
 // expressions
 //
-expressions<collapsed>= expression "|" expressions | expression;
+expressions<collapsed>= expression { "|" expression }; 
 expression= { symbol };
 symbol= literal | regex | identifier | 
 	"(" expressions ")" | 
