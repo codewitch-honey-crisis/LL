@@ -602,6 +602,14 @@ namespace LL
 					return true;
 			return false;
 		}
+		public static IEnumerable<T> Select<T>(this IEnumerable<T> axis, Func<T, bool> predicate)
+		{
+			foreach(var item in axis)
+			{
+				if (predicate(item))
+					yield return item;
+			}
+		}
 		public static bool Contains<T>(this IEnumerable<T> collection, T item, IEqualityComparer<T> comparer)
 		{
 			if (null == comparer)
