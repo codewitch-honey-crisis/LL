@@ -153,26 +153,34 @@ namespace LL
 			if (null == result)
 				result = new Dictionary<string, ICollection<(CfgRule Rule, string Symbol)>>();
 			_FillPredictNT(result);
-			// finally, for each non-terminal N we still have in the firsts, resolve FIRSTS(N)
-			var done = false;
-			while (!done)
+			try
 			{
-				done = true;
-				foreach (var kvp in result)
+
+
+				// finally, for each non-terminal N we still have in the firsts, resolve FIRSTS(N)
+				var done = false;
+				while (!done)
 				{
-					foreach (var item in new List<(CfgRule Rule, string Symbol)>(kvp.Value))
+					done = true;
+					foreach (var kvp in result)
 					{
-						if (IsNonTerminal(item.Symbol))
+						foreach (var item in new List<(CfgRule Rule, string Symbol)>(kvp.Value))
 						{
-							done = false;
-							kvp.Value.Remove(item);
-							foreach (var f in result[item.Symbol])
+							if (IsNonTerminal(item.Symbol))
+							{
+								done = false;
+								kvp.Value.Remove(item);
+								foreach (var f in result[item.Symbol])
 									kvp.Value.Add((item.Rule, f.Symbol));
+							}
 						}
 					}
 				}
 			}
-
+			catch(InvalidOperationException)
+			{
+				throw new CfgException("This operation cannot be performed because the grammar is left recursive.");
+			}
 			return result;
 		}
 		IDictionary<string, ICollection<(CfgRule Rule, string Symbol)>> _FillPredictNT(IDictionary<string, ICollection<(CfgRule Rule, string Symbol)>> result = null)
