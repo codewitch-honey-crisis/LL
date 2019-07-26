@@ -21,7 +21,15 @@ namespace LL
 					Console.WriteLine(cfg.GetK(conflict.Rule1, conflict.Rule2));
 				}
 			}
-			
+			if(0==conflicts.Count)
+			{
+
+				var parser = cfg.ToLL1Parser(ebnf.ToTokenizer(cfg, new FileReaderEnumerable(@"..\..\..\ebnf.ebnf")));
+				do
+				{
+					Console.WriteLine(parser.ParseSubtree());
+				} while (ParserNodeType.EndDocument != parser.NodeType);
+			}
 		}
 		static void _WriteRights(IList<IList<string>> rights)
 		{

@@ -37,8 +37,8 @@ namespace LL
 				new EbnfOrExpression(
 					new EbnfConcatExpression(
 						new EbnfRefExpression(_listId), Expression), Expression);
-			if (IsOptional)
-				expr = new EbnfOrExpression(expr, null);
+			//if (IsOptional)
+			//	expr = new EbnfOrExpression(expr, null);
 			foreach (var nt in expr.ToDisjunctions(parent, cfg))
 			{
 				CfgRule r = new CfgRule();
@@ -52,7 +52,15 @@ namespace LL
 				if (!cfg.Rules.Contains(r))
 					cfg.Rules.Add(r);
 			}
-			return new List<IList<string>>(new IList<string>[] { new List<string>(new string[] { _listId }) });
+			if(!IsOptional)
+				return new List<IList<string>>(new IList<string>[] { new List<string>(new string[] { _listId }) });
+			else
+			{
+				var result = new List<IList<string>>();
+				result.Add(new List<string>(new string[] { _listId }));
+				result.Add(new List<string>());
+				return result;
+			}
 		}
 		public override CharFA ToFA(EbnfDocument parent, Cfg cfg)
 		{
