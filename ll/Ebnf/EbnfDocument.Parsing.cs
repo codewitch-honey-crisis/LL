@@ -11,6 +11,47 @@ namespace LL
 		{
 			var msgs = new List<EbnfMessage>();
 			result = null;
+			var or = new List<IList<EbnfExpression>>();
+			var seq = new List<EbnfExpression>();
+			for(int ic = parent.Children.Count,i=firstChildIndex;i<ic;++i)
+			{
+				EbnfExpression expr;
+				var pn = parent.Children[i];
+				switch(pn.SymbolId)
+				{
+					case EbnfParser.expression:
+						msgs.AddRange(_TryParseExpression(parent.Children[i], out expr));
+						seq.Add(expr);
+						break;
+					case EbnfParser.or:
+						or.Add(seq);
+						seq = new List<EbnfExpression>();
+						break;
+					default:
+						break;
+				}
+			}
+			result = null;
+			for(int ic=or.Count,i=0;i<ic;++i)
+			{
+				var s = or[i];
+				EbnfExpression e = null;
+				switch(s.Count)
+				{
+					case 0:
+						e = null;
+						break;
+					case 1:
+						e = s[0];
+						break;
+					default:
+						for(int jc=s.Count,j=0;j<jc;++j)
+						{
+
+						}
+						break;
+				}
+			}
 			return msgs;
 		}
 		static IList<EbnfMessage> _TryParseExpression(ParseNode pn,out EbnfExpression result)
@@ -39,9 +80,15 @@ namespace LL
 							return msgs;
 						case EbnfParser.lbrace:
 							msgs.AddRange(_TryParseExpressions(c, 1, out result));
+							result = new EbnfRepeatExpression(result);
+							if (EbnfParser.rbracePlus == c.Children[c.Children.Count - 1].SymbolId)
+								((EbnfRepeatExpression)result).IsOptional = false;
+							return msgs;
+						case EbnfParser.lbracket:
+							msgs.AddRange(_TryParseExpressions(c, 1, out result));
+							result = new EbnfOptionalExpression(result);
 							return msgs;
 						default:
-							Debugger.Break();
 							break;
 					}
 				}
