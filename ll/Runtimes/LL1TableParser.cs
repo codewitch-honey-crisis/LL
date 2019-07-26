@@ -6,7 +6,7 @@ namespace LL
 {
 
 	/// <summary>
-	/// An LL(1) parser implemented as a pull-style parser. This one uses strings throughout to make it easier to examine while debugging.
+	/// An LL(1) parser implemented as a pull-style parser.
 	/// </summary>
 	/// <remarks>This interface is similar in use to <see cref="System.Xml.XmlReader"/></remarks>
 	public class LL1TableParser : Parser
