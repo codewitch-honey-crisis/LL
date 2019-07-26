@@ -1271,6 +1271,9 @@ namespace LL
 					ch = '\b';
 					break;
 				case 'x':
+					if (!e.MoveNext())
+						throw new ExpectingException("Expecting input for escape \\x");
+					ch = e.Current;
 					byte x = _FromHexChar(ch);
 					if (!e.MoveNext())
 					{
@@ -1282,6 +1285,9 @@ namespace LL
 					ch = unchecked((char)x);
 					break;
 				case 'u':
+					if (!e.MoveNext())
+						throw new ExpectingException("Expecting input for escape \\u");
+					ch = e.Current;
 					ushort u = _FromHexChar(ch);
 					if (!e.MoveNext())
 					{
