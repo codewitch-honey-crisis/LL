@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "llconf": {
+      "commandName": "Project",
+      "commandLineArgs": "..\\..\\..\\javascript.ebnf"
+    }
+  }
+}

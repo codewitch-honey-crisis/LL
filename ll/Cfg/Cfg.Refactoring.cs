@@ -197,8 +197,6 @@ namespace LL
 		}
 		bool _IsIndirectlyLeftRecursive(CfgRule rule)
 		{
-			// TODO: FIX 
-			return false;
 			if (_IsLeftRecursive(rule, null))
 				return false;
 			if (FillLeftDescendants(rule).Contains(rule.Left))
