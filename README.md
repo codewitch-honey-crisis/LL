@@ -10,8 +10,6 @@ This repository contains several projects
 
 * **lltree** - a tool to render an ascii parse tree for a given grammar and input file
 
-* **llvstudio** - a custom tool "LL" used in visual studio 2017 (and 2019?) that can render like llgen does
-
 * **llgui** - a work in progress gui for editing EBNF. Doesn't quite work yet
 
 * **lltest** - one of my tests written as a command line utility.
@@ -21,3 +19,5 @@ This repository contains several projects
 The *DebugLL1Parser* and *DebugTokenizer* classes use only strings for internal information so seeing what they do in the debugger is easy. I use these to prototype changes to the parser and lexer algorithms before baking those changes into the *LL1TableParser* and *TableTokenizer* classes.
 
 Cfg and Ebnf are both pretty enormous and contain APIs for manipulating CFGs and EBNF documents. The latter exposes a full DOM object model.
+
+the **llvstudio** project has been removed due to a corrupt Nuget repository. It will be back online eventually.
