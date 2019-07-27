@@ -256,7 +256,7 @@ namespace LL
 						
 					
 					}
-					else if (_IsIndirectlyLeftRecursive(rule))
+					/*else if (_IsIndirectlyLeftRecursive(rule))
 					{
 						result.Add(new CfgMessage(CfgErrorLevel.Message, -1, string.Concat("Rule ", rule, " modified because it was indirectly left recursive.")));
 						Rules.Remove(rule);
@@ -312,7 +312,7 @@ namespace LL
 						}
 						if (!done)
 							break;
-					}
+					}*/
 				}
 			}
 			return result;
