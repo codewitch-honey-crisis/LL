@@ -1,5 +1,4 @@
-﻿identifier    = '[A-Za-z_][0-9A-Z_a-z]*';
-stringLiteral<terminal> = '"([^"\\]|\\.)*"'|'\'([^\'\\]|\\.)*\'';
+﻿stringLiteral<terminal> = '"([^"\\]|\\.)*"'|'\'([^\'\\]|\\.)*\'';
 
 HexIntegerLiteral = '0x[0-9A-Fa-f]+';
 
@@ -233,3 +232,5 @@ sourceElements = sourceElement
 
 sourceElement = statement
                    | functionDeclaration;
+// declare it last so it gets low priority from the lexer
+identifier    = '[A-Za-z_][0-9A-Z_a-z]*';

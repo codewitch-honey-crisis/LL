@@ -32,7 +32,60 @@ namespace LL
 		/// The epsilon transitions (transitions on no input)
 		/// </summary>
 		public ICollection<CharFA> EpsilonTransitions { get; } = new List<CharFA>();
-		
+		class _ExpFA
+		{
+			internal readonly IDictionary<_ExpFA, string> Transitions = new Dictionary<_ExpFA, string>();
+		}
+		public bool IsFinal {
+			get { return 0 == Transitions.Count && 0 == EpsilonTransitions.Count; }
+		}
+		public override string ToString()
+		{
+			var dfa = ToDfa();
+			var sb = new StringBuilder();
+			dfa._AppendTo(sb, new List<CharFA>());
+			return sb.ToString();
+		}
+		void _AppendTo(StringBuilder sb,ICollection<CharFA> visited)
+		{
+			if(null!=visited)
+			{
+				if (visited.Contains(this))
+				{
+					sb.Append("*");
+					return;
+				}
+				visited.Add(this);
+			}
+			
+			//var sb = new StringBuilder();
+			var trgs = FillInputTransitionRangesGroupedByState();
+			var delim = "";
+			bool isAccepting = null!=AcceptingSymbol;
+			if (1 < trgs.Count)
+				sb.Append("(");
+			foreach (var trg in trgs)
+			{
+				sb.Append(delim);
+				//sb.Append("(");
+				if (1== trg.Value.Count && 1== trg.Value[0].Length)
+					_AppendRangeTo(sb, trg.Value[0]);
+				else
+				{
+					sb.Append("[");
+					foreach (var rng in trg.Value)
+						_AppendRangeTo(sb, rng);
+					sb.Append("]");
+				}
+				trg.Key._AppendTo(sb, new List<CharFA>(visited));
+				//sb.Append(")");
+				delim = "|";
+			}
+			if (1 < trgs.Count)
+				sb.Append(")");
+			if (isAccepting && !IsFinal)
+				sb.Append("?");
+		}
 		/// <summary>
 		/// Computes the set of all states reachable from this state, including itself. Puts the result in the <paramref name="result"/> field amd returns the same collection."/>
 		/// </summary>
