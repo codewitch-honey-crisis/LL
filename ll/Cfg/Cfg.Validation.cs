@@ -102,8 +102,8 @@ namespace LL
 					if(!IsNonTerminal(sym))
 						if ("#EOS"==sym || "#ERROR"==sym || (bool)AttributeSets.GetAttribute(sym, "hidden", false))
 							found = true;
-					if(!found)
-						result.Add(new CfgMessage(CfgErrorLevel.Error, -1, string.Concat("Unreachable symbol \"", sym, "\"")));
+					//if(!found)
+					//	result.Add(new CfgMessage(CfgErrorLevel.Error, -1, string.Concat("Unreachable symbol \"", sym, "\"")));
 				}
 			}
 			// build a temporary parse table to check for conflicts

@@ -158,7 +158,6 @@ statement = block
               | returnStatement
               | withStatement
               | labelledStatement
-              | switchStatement
               | throwStatement
               | tryStatement
               | expression;
@@ -201,24 +200,6 @@ returnStatement = "return" ";"
                        | "return" expression ";";
 
 withStatement = "with" "(" expression ")" statement ";";
-
-switchStatement = "switch" "(" expression ")" caseBlock;
-
-caseBlock = "{" "}"
-               | "{" caseClauses "}"
-               | "{" caseClauses defaultClause "}"
-               | "{" caseClauses defaultClause caseClauses "}"
-               | "{" defaultClause caseClauses "}"
-               | "{" defaultClause "}";
-
-caseClauses = caseClause
-                 | caseClauses caseClause;
-
-caseClause = "case" expression ":" statementList
-                | "case" expression ":";
-
-defaultClause = "default" ":"
-                   | "default" ":" statementList;
 
 labelledStatement = identifier ":" statement;
 

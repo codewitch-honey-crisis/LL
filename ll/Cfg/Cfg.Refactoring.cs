@@ -38,30 +38,34 @@ namespace LL
 				}
 			return result;
 		}
-		public IList<CfgMessage> PrepareLL1(bool throwIfErrors=true)
+		public IList<CfgMessage> PrepareLL1(bool throwIfErrors=true,int repeat = 2)
 		{
+			if (1 > repeat) repeat = 1;
 			var result = new List<CfgMessage>();
 			Cfg old = this;
-			// if 10 times doesn't sort out this grammar it's not LL(1)
-			// the math is such that we don't know unless we try
-			// and the tries can go on forever.
-			for (int i = 0; i < 10; ++i)
+			for (int j = 0; j < repeat; ++j)
 			{
-				if (IsDirectlyLeftRecursive)
-					result.AddRange(EliminateLeftRecursion());
-				var cc = FillConflicts();
-				if (_HasFirstFollowsConflicts(cc))
-					result.AddRange(EliminateFirstFollowsConflicts());
-				cc = FillConflicts();
-				if(_HasFirstFirstConflicts(cc))
-					result.AddRange(EliminateFirstFirstConflicts());
-				//result.AddRange(EliminateUnderivableRules());
-				cc = FillConflicts();
-				if (0 == cc.Count && !IsDirectlyLeftRecursive)
-					break;
-				if (old.Equals(this))
-					break;
-				old = Clone();
+				// if 20 times doesn't sort out this grammar it's not LL(1)
+				// the math is such that we don't know unless we try
+				// and the tries can go on forever.
+				for (int i = 0; i < 20; ++i)
+				{
+					if (IsDirectlyLeftRecursive)
+						result.AddRange(EliminateLeftRecursion());
+					var cc = FillConflicts();
+					if (_HasFirstFollowsConflicts(cc))
+						result.AddRange(EliminateFirstFollowsConflicts());
+					cc = FillConflicts();
+					if (_HasFirstFirstConflicts(cc))
+						result.AddRange(EliminateFirstFirstConflicts());
+					//result.AddRange(EliminateUnderivableRules());
+					cc = FillConflicts();
+					if (0 == cc.Count && !IsDirectlyLeftRecursive)
+						break;
+					if (old.Equals(this))
+						break;
+					old = Clone();
+				}
 			}
 			if (IsDirectlyLeftRecursive)
 				result.Add(new CfgMessage(CfgErrorLevel.Error, -1, "Grammar is unresolvably and directly left recursive and cannot be parsed with an LL parser."));

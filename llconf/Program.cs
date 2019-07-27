@@ -30,7 +30,10 @@ namespace LL
 			ebnf.Prepare(true);
 			var cfg = ebnf.ToCfg();
 			cfg.PrepareLL1(false);
-			foreach(var conflict in cfg.FillConflicts())
+			cfg.PrepareLL1(false);
+			cfg.PrepareLL1(false);
+			cfg.PrepareLL1(false);
+			foreach (var conflict in cfg.FillConflicts())
 			{
 				switch(conflict.Kind)
 				{
