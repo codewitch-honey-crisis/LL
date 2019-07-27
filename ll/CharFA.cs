@@ -39,6 +39,9 @@ namespace LL
 		public bool IsFinal {
 			get { return 0 == Transitions.Count && 0 == EpsilonTransitions.Count; }
 		}
+		public bool IsLoop {
+			get { return FillDescendants().Contains(this); }
+		}
 		public override string ToString()
 		{
 			var dfa = ToDfa();
@@ -83,7 +86,7 @@ namespace LL
 			}
 			if (1 < trgs.Count)
 				sb.Append(")");
-			if (isAccepting && !IsFinal)
+			if (isAccepting && !IsFinal && !IsLoop)
 				sb.Append("?");
 		}
 		/// <summary>
@@ -103,6 +106,21 @@ namespace LL
 				foreach (var fa in EpsilonTransitions)
 					fa.FillClosure(result);
 			}
+			return result;
+		}
+		/// <summary>
+		/// Computes the set of all states reachable from this state. Puts the result in the <paramref name="result"/> field amd returns the same collection."/>
+		/// </summary>
+		/// <param name="result">The collection to fill, or null for one to be created</param>
+		/// <returns>Either <paramref name="result"/> or a new collection filled with the result of the closure computation.</returns>
+		public IList<CharFA> FillDescendants(IList<CharFA> result = null)
+		{
+			if (null == result)
+				result = new List<CharFA>();
+			foreach (var fa in Transitions.Values)
+				fa.FillClosure(result);
+			foreach (var fa in EpsilonTransitions)
+				fa.FillClosure(result);
 			return result;
 		}
 		/// <summary>
