@@ -290,6 +290,25 @@ namespace LL
 			
 			return result;
 		}
+		public IList<string> FillLeftDescendants(string symbol, IList<string> result = null)
+		{
+			if (null == result)
+				result = new List<string>();
+			if (!IsNonTerminal(symbol))
+				return result;
+			foreach (var rule in FillNonTerminalRules(symbol))
+				if (0 < rule.Right.Count && null != rule.Right[0])
+					FillClosure(rule.Right[0], result);
+			return result;
+		}
+		public IList<string> FillLeftDescendants(CfgRule rule, IList<string> result = null)
+		{
+			if (null == result)
+				result = new List<string>();
+			if (0 < rule.Right.Count && null != rule.Right[0])
+				FillClosure(rule.Right[0], result);
+			return result;
+		}
 		public IDictionary<string, ICollection<string>> FillFollows(IDictionary<string, ICollection<string>> result = null)
 		{
 			if (null == result)

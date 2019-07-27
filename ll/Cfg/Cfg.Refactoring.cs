@@ -20,7 +20,24 @@ namespace LL
 					return true;
 			return false;
 		}
-		
+		public IList<CfgMessage> EliminateUnderivableRules()
+		{
+			var result = new List<CfgMessage>();
+			var ss = StartSymbol;
+			if (null == ss)
+			{
+				result.Add(new CfgMessage(CfgErrorLevel.Warning, -1, "No start symbol set. Nothing done."));
+				return result;
+			}
+			var closure = FillClosure(ss);
+			foreach (var rule in new List<CfgRule>(Rules))
+				if (!closure.Contains(rule.Left))
+				{
+					Rules.Remove(rule);
+					result.Add(new CfgMessage(CfgErrorLevel.Message, -1, string.Concat("Rule ", rule, " removed because it was not referenced.")));
+				}
+			return result;
+		}
 		public IList<CfgMessage> PrepareLL1(bool throwIfErrors=true)
 		{
 			var result = new List<CfgMessage>();
@@ -150,46 +167,149 @@ namespace LL
 			}
 			return result;
 		}
+		bool _IsLeftRecursive(CfgRule rule, ICollection<CfgRule> visited)
+		{
+			if (null == visited)
+			{
+				if (0 < rule.Right.Count)
+				{
+					return Equals(rule.Left, rule.Right[0]);
+				}
+				return false;
+			}
+			if (!visited.Contains(rule))
+				visited.Add(rule);
+			else
+				return true;
+
+			if (0 < rule.Right.Count)
+			{
+				if (Equals(rule.Left, rule.Right[0]))
+					return true;
+				foreach (var r in Rules)
+				{
+					if (Equals(r.Left, rule.Right[0]))
+						if (_IsLeftRecursive(r, visited))
+							return true;
+				}
+			}
+			return false;
+		}
+		bool _IsIndirectlyLeftRecursive(CfgRule rule)
+		{
+			// TODO: FIX 
+			return false;
+			if (_IsLeftRecursive(rule, null))
+				return false;
+			if (FillLeftDescendants(rule).Contains(rule.Left))
+				return true;
+			return false;
+		}
 		public IList<CfgMessage> EliminateLeftRecursion()
 		{
+
 			var result = new List<CfgMessage>();
-			var ic = Rules.Count;
-			for (var i = 0; i < ic; ++i)
+			var done = false;
+			while (!done)
 			{
-				var rule = Rules[i];
-				if (rule.IsDirectlyLeftRecursive)
+				done = true;
+				var ic = Rules.Count;
+				for (var i = 0; i < ic; ++i)
 				{
-					Rules.Remove(rule);
-					result.Add(new CfgMessage(CfgErrorLevel.Message, -1, string.Format("Removed rule {0} because it is directly left recursive.", rule)));
-
-					var newId = GetTransformId(rule.Left);
-
-					var col = new List<string>();
-					var c = rule.Right.Count;
-					for (var j = 1; j < c; ++j)
-						col.Add(rule.Right[j]);
-					col.Add(newId);
-					AttributeSets.SetAttribute(newId, "collapsed", true);
-					var newRule = new CfgRule(newId);
-					newRule.Right.AddRange(col);
-					if (!Rules.Contains(newRule))
-						Rules.Add(newRule);
-					result.Add(new CfgMessage(CfgErrorLevel.Message, -1, string.Format("Added rule {1} to replace rule {0}", rule, newRule)));
-
-					var rr = new CfgRule(newId);
-					if (!Rules.Contains(rr))
-						Rules.Add(rr);
-					result.Add(new CfgMessage(CfgErrorLevel.Message, -1, string.Format("Added rule {1} to replace rule {0}", rule, rr)));
-
-					foreach (var r in Rules)
+					var rule = Rules[i];
+					if (rule.IsDirectlyLeftRecursive)
 					{
-						if (Equals(r.Left, rule.Left))
+						Rules.Remove(rule);
+						result.Add(new CfgMessage(CfgErrorLevel.Message, -1, string.Format("Removed rule {0} because it is directly left recursive.", rule)));
+
+						var newId = GetTransformId(rule.Left);
+
+						var col = new List<string>();
+						var c = rule.Right.Count;
+						for (var j = 1; j < c; ++j)
+							col.Add(rule.Right[j]);
+						col.Add(newId);
+						AttributeSets.SetAttribute(newId, "collapsed", true);
+						var newRule = new CfgRule(newId);
+						newRule.Right.AddRange(col);
+						if (!Rules.Contains(newRule))
+							Rules.Add(newRule);
+						result.Add(new CfgMessage(CfgErrorLevel.Message, -1, string.Format("Added rule {1} to replace rule {0}", rule, newRule)));
+
+						var rr = new CfgRule(newId);
+						if (!Rules.Contains(rr))
+							Rules.Add(rr);
+						result.Add(new CfgMessage(CfgErrorLevel.Message, -1, string.Format("Added rule {1} to replace rule {0}", rule, rr)));
+
+						foreach (var r in Rules)
 						{
-							if (!r.IsDirectlyLeftRecursive)
+							if (Equals(r.Left, rule.Left))
 							{
-								r.Right.Add(newId);
+								if (!r.IsDirectlyLeftRecursive)
+								{
+									r.Right.Add(newId);
+								}
 							}
 						}
+						
+					
+					}
+					else if (_IsIndirectlyLeftRecursive(rule))
+					{
+						result.Add(new CfgMessage(CfgErrorLevel.Message, -1, string.Concat("Rule ", rule, " modified because it was indirectly left recursive.")));
+						Rules.Remove(rule);
+						var jc = rule.Right.Count;
+						var append = new List<string>(jc - 1);
+						for (var j = 1; j < jc; ++j)
+							append.Add(rule.Right[j]);
+						// do indirect left recursion elimination.
+						// first make it directly left recursive.
+						var dstRules = FillNonTerminalRules(rule.Right[0]);
+						foreach (var drule in dstRules)
+						{
+							var newRule = new CfgRule(rule.Left);
+							// now add the stuff from the dst rule;
+							newRule.Right.AddRange(drule.Right);
+							newRule.Right.AddRange(append);
+							if (!Rules.Contains(newRule))
+								Rules.Add(newRule);
+							done = false;
+							var nt = GetTransformId(rule.Left);
+							var allRules = FillNonTerminalRules(rule.Left);
+							foreach (var ar in allRules)
+							{
+								// Section 2.3, 3.2
+								// TODO: This needs lots more testing
+
+								if (ar.IsNil || !Equals(ar.Right[0], rule.Left))
+								{
+									var nar = new CfgRule(rule.Left);
+									nar.Right.AddRange(ar.Right);
+									nar.Right.Add(nt);
+									if (!Rules.Contains(nar))
+										Rules.Add(nar);
+									Rules.Remove(ar);
+								}
+								else
+								{
+									ar.Right.RemoveAt(0);
+									ar.Left = nt;
+									ar.Right.Add(nt);
+									var nr2 = new CfgRule(nt);
+									if (!Rules.Contains(nr2))
+										Rules.Add(nr2);
+								}
+								//}
+
+							}
+
+							result.AddRange(EliminateUnderivableRules());
+
+							break;
+
+						}
+						if (!done)
+							break;
 					}
 				}
 			}

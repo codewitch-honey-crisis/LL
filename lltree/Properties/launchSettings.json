@@ -2,7 +2,7 @@
   "profiles": {
     "lltree": {
       "commandName": "Project",
-      "commandLineArgs": "..\\..\\..\\javascript.ebnf ..\\..\\..\\hello.js"
+      "commandLineArgs": "..\\..\\..\\json.ebnf ..\\..\\..\\data.json"
     }
   }
 }
