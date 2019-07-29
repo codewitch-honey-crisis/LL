@@ -122,7 +122,7 @@ namespace LL
 				_inner["hidden"] = value;
 			}
 		}
-		public bool Collapse {
+		public bool Collapsed {
 			get {
 				object o;
 				if (_inner.TryGetValue("collapsed", out o) && o is bool)
