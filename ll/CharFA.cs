@@ -16,7 +16,7 @@ namespace LL
 	/// <remarks>There's just enough here to make it work, not to make it fast or fancy.</remarks>
 	public class CharFA : ICloneable
 	{
-		public CharFA(string accepting=null)
+		public CharFA(string accepting = null)
 		{
 			AcceptingSymbol = accepting;
 		}
@@ -42,6 +42,10 @@ namespace LL
 		public bool IsLoop {
 			get { return FillDescendants().Contains(this); }
 		}
+		public bool IsNeutral {
+			get { return 0 == Transitions.Count && 1 == EpsilonTransitions.Count; }
+		}
+		
 		public override string ToString()
 		{
 			var dfa = ToDfa();
@@ -49,9 +53,9 @@ namespace LL
 			dfa._AppendTo(sb, new List<CharFA>());
 			return sb.ToString();
 		}
-		void _AppendTo(StringBuilder sb,ICollection<CharFA> visited)
+		void _AppendTo(StringBuilder sb, ICollection<CharFA> visited)
 		{
-			if(null!=visited)
+			if (null != visited)
 			{
 				if (visited.Contains(this))
 				{
@@ -60,18 +64,18 @@ namespace LL
 				}
 				visited.Add(this);
 			}
-			
+
 			//var sb = new StringBuilder();
 			var trgs = FillInputTransitionRangesGroupedByState();
 			var delim = "";
-			bool isAccepting = null!=AcceptingSymbol;
+			bool isAccepting = null != AcceptingSymbol;
 			if (1 < trgs.Count)
 				sb.Append("(");
 			foreach (var trg in trgs)
 			{
 				sb.Append(delim);
 				//sb.Append("(");
-				if (1== trg.Value.Count && 1== trg.Value[0].Length)
+				if (1 == trg.Value.Count && 1 == trg.Value[0].Length)
 					_AppendRangeTo(sb, trg.Value[0]);
 				else
 				{
@@ -140,7 +144,7 @@ namespace LL
 			}
 			return result;
 		}
-		public static IList<CharFA> FillEpsilonClosure(IEnumerable<CharFA> states,IList<CharFA> result=null)
+		public static IList<CharFA> FillEpsilonClosure(IEnumerable<CharFA> states, IList<CharFA> result = null)
 		{
 			if (null == result)
 				result = new List<CharFA>();
@@ -156,7 +160,7 @@ namespace LL
 		{
 			var closure = FillClosure();
 			var nclosure = new CharFA[closure.Count];
-			for(var i = 0;i<nclosure.Length;i++)
+			for (var i = 0; i < nclosure.Length; i++)
 			{
 				nclosure[i] = new CharFA();
 				nclosure[i].AcceptingSymbol = closure[i].AcceptingSymbol;
@@ -177,6 +181,52 @@ namespace LL
 				}
 			}
 			return nclosure[0];
+		}
+		public bool IsLiteral {
+			get {
+				var closure = FillClosure();
+				int ic = closure.Count, i = 0;
+				for (;i<ic;++i)
+				{
+					var fa = closure[i];
+					if (!(fa.IsNeutral || fa.IsFinal || (0 == fa.EpsilonTransitions.Count && 1 == fa.Transitions.Count)))
+						break;
+				}
+				return (i == ic);
+			}
+		}
+		public CharFA ClonePath(CharFA to)
+		{
+			var closure = FillClosure();
+			var nclosure = new CharFA[closure.Count];
+			for (var i = 0; i < nclosure.Length; i++)
+			{
+				nclosure[i] = new CharFA();
+				nclosure[i].AcceptingSymbol = closure[i].AcceptingSymbol;
+			}
+			for (var i = 0; i < nclosure.Length; i++)
+			{
+				var t = nclosure[i].Transitions;
+				var e = nclosure[i].EpsilonTransitions;
+				foreach (var trns in closure[i].Transitions)
+				{
+					if(trns.Value.FillClosure().Contains(to)) {
+						var id = closure.IndexOf(trns.Value);
+
+						t.Add(trns.Key, nclosure[id]);
+					}
+				}
+				foreach (var trns in closure[i].EpsilonTransitions)
+				{
+					if (trns.FillClosure().Contains(to))
+					{
+						var id = closure.IndexOf(trns);
+						e.Add(nclosure[id]);
+					}
+				}
+			}
+			return nclosure[0];
+
 		}
 		public sealed class DotGraphOptions
 		{
@@ -228,7 +278,7 @@ namespace LL
 			{
 				if (null != ffa.AcceptingSymbol)
 					accepting.Add(ffa);
-				if (0==ffa.Transitions.Count && 0==ffa.EpsilonTransitions.Count && null==ffa.AcceptingSymbol)
+				if (0 == ffa.Transitions.Count && 0 == ffa.EpsilonTransitions.Count && null == ffa.AcceptingSymbol)
 					finals.Add(ffa);
 			}
 			IList<CharFA> fromStates = null;
@@ -259,7 +309,7 @@ namespace LL
 					if (null != ffa.AcceptingSymbol)
 						accepting.Add(ffa);
 					else if (0 == ffa.Transitions.Count && 1 == ffa.EpsilonTransitions.Count)
-							neutrals.Add(ffa);
+						neutrals.Add(ffa);
 				}
 				var rngGrps = ffa.FillInputTransitionRangesGroupedByState(null);
 				foreach (var rngGrp in rngGrps)
@@ -274,7 +324,7 @@ namespace LL
 					var sb = new StringBuilder();
 					foreach (CharRange range in rngGrp.Value)
 						_AppendRangeTo(sb, range);
-					
+
 					if (sb.Length != 1 || " " == sb.ToString())
 					{
 						writer.Write('[');
@@ -329,7 +379,7 @@ namespace LL
 					writer.Write("<TR><TD>");
 					writer.Write(Convert.ToString(ffa.AcceptingSymbol).Replace("\"", "&quot;"));
 					writer.Write("</TD></TR>");
-					
+
 				}
 				writer.Write("</TABLE>");
 				writer.Write(">");
@@ -578,11 +628,11 @@ namespace LL
 		/// <param name="string">The string to match</param>
 		/// <param name="accept">The symbol to accept</param>
 		/// <returns>A new FA machine that will match this literal</returns>
-		public static CharFA Literal(IEnumerable<char> @string,string accept = "")
+		public static CharFA Literal(IEnumerable<char> @string, string accept = "")
 		{
 			var result = new CharFA();
 			var current = result;
-			foreach(char ch in @string)
+			foreach (char ch in @string)
 			{
 				current.AcceptingSymbol = null;
 				var fa = new CharFA();
@@ -619,7 +669,7 @@ namespace LL
 			var final = new CharFA();
 			final.AcceptingSymbol = accept;
 			foreach (char ch in CharRange.ExpandRanges(ranges))
-				result.Transitions.Add(ch,final);
+				result.Transitions.Add(ch, final);
 			return result;
 		}
 		/// <summary>
@@ -632,7 +682,7 @@ namespace LL
 		{
 			CharFA left = null;
 			var right = left;
-			foreach(var val in exprs)
+			foreach (var val in exprs)
 			{
 				if (null == val) continue;
 				var nval = val.Clone();
@@ -645,13 +695,13 @@ namespace LL
 					right = nval;
 				else
 					_Concat(right, nval);
-				
+
 				_Concat(left, right);
 			}
 			right.FirstAcceptingState.AcceptingSymbol = accept;
 			return left;
 		}
-		static void _Concat(CharFA lhs,CharFA rhs)
+		static void _Concat(CharFA lhs, CharFA rhs)
 		{
 			var f = lhs.FirstAcceptingState;
 			f.EpsilonTransitions.Add(rhs);
@@ -663,19 +713,19 @@ namespace LL
 		/// <param name="exprs">The expressions to match</param>
 		/// <param name="accept">The symbol to accept</param>
 		/// <returns>A new FA that will match the union of the FA expressions passed</returns>
-		public static CharFA Or(IEnumerable<CharFA> exprs,string accept = "")
+		public static CharFA Or(IEnumerable<CharFA> exprs, string accept = "")
 		{
 			var result = new CharFA();
 			var final = new CharFA();
 			final.AcceptingSymbol = accept;
-			foreach(var fa in exprs)
+			foreach (var fa in exprs)
 			{
 				var nfa = fa.Clone();
 				result.EpsilonTransitions.Add(nfa);
 				var nffa = nfa.FirstAcceptingState;
 				nffa.AcceptingSymbol = null;
 				nffa.EpsilonTransitions.Add(final);
-				
+
 			}
 			return result;
 		}
@@ -718,16 +768,16 @@ namespace LL
 		/// <param name="expr">The expression to repeat</param>
 		/// <param name="accept">The symbol to accept</param>
 		/// <returns>A new FA that matches the specified FA zero or more times</returns>
-		public static CharFA Kleene(CharFA expr,string accept = "")
+		public static CharFA Kleene(CharFA expr, string accept = "")
 		{
-			return Optional(Repeat(expr),accept);
+			return Optional(Repeat(expr), accept);
 		}
 		/// <summary>
 		/// Returns the first state that accepts from a given FA, or null if none do.
 		/// </summary>
 		public CharFA FirstAcceptingState {
 			get {
-				foreach(var fa in FillClosure())
+				foreach (var fa in FillClosure())
 					if (null != fa.AcceptingSymbol)
 						return fa;
 				return null;
@@ -740,34 +790,35 @@ namespace LL
 		/// <param name="input">The input to use</param>
 		/// <param name="result">The states that are now entered as a result of the move</param>
 		/// <returns><paramref name="result"/> or a new collection if it wasn't specified.</returns>
-		public static IList<CharFA> FillMove(IEnumerable<CharFA> states, char input,IList<CharFA> result = null) {
+		public static IList<CharFA> FillMove(IEnumerable<CharFA> states, char input, IList<CharFA> result = null)
+		{
 			if (null == result) result = new List<CharFA>();
 			foreach (var fa in FillEpsilonClosure(states))
 			{
 				// examine each of the states reachable from this state on no input
-				
+
 				CharFA ofa;
 				// see if this state has this input in its transitions
 				if (fa.Transitions.TryGetValue(input, out ofa))
-					foreach(var efa in ofa.FillEpsilonClosure())
+					foreach (var efa in ofa.FillEpsilonClosure())
 						if (!result.Contains(efa)) // if it does, add it if it's not already there
 							result.Add(efa);
 			}
 			return result;
 		}
-		
-		public CharDfaEntry[] ToDfaTable(IDictionary<string,int> symbolLookup=null)
+
+		public CharDfaEntry[] ToDfaTable(IDictionary<string, int> symbolLookup = null)
 		{
 			var dfa = ToDfa();
 			var closure = dfa.FillClosure();
-			if(symbolLookup==null)
+			if (symbolLookup == null)
 			{
-				symbolLookup = new Dictionary<string,int>();
+				symbolLookup = new Dictionary<string, int>();
 				var i = 0;
-				for(int jc=closure.Count,j=0;j<jc;++j)
+				for (int jc = closure.Count, j = 0; j < jc; ++j)
 				{
 					var fa = closure[j];
-					if(null!=fa.AcceptingSymbol && !symbolLookup.ContainsKey(fa.AcceptingSymbol))
+					if (null != fa.AcceptingSymbol && !symbolLookup.ContainsKey(fa.AcceptingSymbol))
 					{
 						symbolLookup.Add(fa.AcceptingSymbol, i);
 						++i;
@@ -776,7 +827,7 @@ namespace LL
 			}
 			// (int Accept, (char[] Ranges, int Destination)[])[]
 			var result = new CharDfaEntry[closure.Count];
-			for(var i = 0;i<result.Length;i++)
+			for (var i = 0; i < result.Length; i++)
 			{
 				var fa = closure[i];
 				var trgs = fa.FillInputTransitionRangesGroupedByState();
@@ -785,10 +836,10 @@ namespace LL
 
 				foreach (var trg in trgs)
 				{
-						trns[j] = new KeyValuePair<string, int>(
-							CharRange.ToPackedString(trg.Value),
-							closure.IndexOf(trg.Key));
-					
+					trns[j] = new KeyValuePair<string, int>(
+						CharRange.ToPackedString(trg.Value),
+						closure.IndexOf(trg.Key));
+
 					++j;
 				}
 				result[i] = new CharDfaEntry(
@@ -798,7 +849,7 @@ namespace LL
 			}
 			return result;
 		}
-		
+
 		/// <summary>
 		/// Returns a <see cref="IDictionary{FA,IList{KeyValuePair{Char,Char}}}"/>, keyed by state, that contains all of the outgoing local input transitions, expressed as a series of ranges
 		/// </summary>
@@ -832,15 +883,15 @@ namespace LL
 			CharFA dfa = new CharFA();
 			var al = new List<string>();
 			foreach (var fa in states)
-				if (null!=fa.AcceptingSymbol)
+				if (null != fa.AcceptingSymbol)
 					if (!al.Contains(fa.AcceptingSymbol))
 						al.Add(fa.AcceptingSymbol);
 			int ac = al.Count;
 			if (1 == ac)
 				dfa.AcceptingSymbol = al[0];
 			else if (1 < ac)
-				dfa.AcceptingSymbol = string.Join("|",al); // hang on to the multiple symbols
-			
+				dfa.AcceptingSymbol = string.Join("|", al); // hang on to the multiple symbols
+
 
 			CharFA result = dfa; // store the initial state for later, so we can return it.
 
@@ -889,7 +940,7 @@ namespace LL
 								{
 									foreach (var d in dst.FillEpsilonClosure())
 									{
-										if (null!=d.AcceptingSymbol)
+										if (null != d.AcceptingSymbol)
 											if (!acc.Contains(d.AcceptingSymbol))
 												acc.Add(d.AcceptingSymbol);
 										if (!ns.Contains(d))
@@ -906,11 +957,11 @@ namespace LL
 								if (1 == ac)
 									ndfa.AcceptingSymbol = acc[0];
 								else if (1 < ac)
-									ndfa.AcceptingSymbol = string.Join("|",acc);
+									ndfa.AcceptingSymbol = string.Join("|", acc);
 								else
 									ndfa.AcceptingSymbol = null;
 
-								
+
 
 								dfaMap.Add(ns, ndfa);
 								unmarked.Add(ndfa);
@@ -959,7 +1010,7 @@ namespace LL
 				}
 
 			}
-			
+
 			sealed class _KeysCollection : ICollection<char>
 			{
 				IDictionary<CharFA, ICollection<char>> _inner;
@@ -1020,7 +1071,7 @@ namespace LL
 				}
 
 				IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-				
+
 			}
 			sealed class _ValuesCollection : ICollection<CharFA>
 			{
@@ -1085,7 +1136,7 @@ namespace LL
 
 			}
 			public ICollection<CharFA> Values { get { return new _ValuesCollection(_inner); } }
-			
+
 			public int Count {
 				get {
 					var result = 0;
@@ -1693,7 +1744,7 @@ namespace LL
 								break;
 							case '?':
 								next = new CharFA();
-								
+
 								next.Transitions.Add((char)ch, new CharFA(accepting));
 								next = CharFA.Optional(next, accepting);
 								pc.Advance();

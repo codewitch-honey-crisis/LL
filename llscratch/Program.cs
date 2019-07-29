@@ -7,11 +7,13 @@ namespace LL
 	{
 		static void Main(string[] args)
 		{
-			var fa = CharFA.Parse("fuba[rz]+","woo!");
+			var fa = CharFA.Parse("fu(ba+r|baz)","woo!");
 			var dfa = fa.ToDfa();
-			dfa.RenderToFile(@"..\..\..\fa.jpg");
-			Console.WriteLine(fa.ToString());
-			
+			var closure = dfa.FillClosure();
+			var subset = closure[0].ClonePath(closure[5]);
+			subset.RenderToFile(@"..\..\..\fa.jpg");
+			Console.WriteLine(dfa.IsLiteral);
+			Console.WriteLine(subset.IsLiteral);
 			
 		}
 		static void _DoParse()
