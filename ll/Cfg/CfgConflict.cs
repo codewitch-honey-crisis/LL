@@ -13,11 +13,9 @@ namespace LL
 	{
 		public CfgConflict(CfgConflictKind kind,CfgRule rule1,CfgRule rule2,string symbol)
 		{
-			if (null == rule1) throw new ArgumentNullException("rule1");
-			if (null == rule2) throw new ArgumentNullException("rule2");
 			Kind = kind;
-			Rule1 = rule1;
-			Rule2 = rule2;
+			Rule1 = rule1 ?? throw new ArgumentNullException("rule1");
+			Rule2 = rule2 ?? throw new ArgumentNullException("rule2");
 			Symbol = symbol;
 		}
 		public CfgConflictKind Kind { get; } 

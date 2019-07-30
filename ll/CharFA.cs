@@ -31,11 +31,8 @@ namespace LL
 		/// <summary>
 		/// The epsilon transitions (transitions on no input)
 		/// </summary>
-		public ICollection<CharFA> EpsilonTransitions { get; } = new List<CharFA>();
-		class _ExpFA
-		{
-			internal readonly IDictionary<_ExpFA, string> Transitions = new Dictionary<_ExpFA, string>();
-		}
+		public IList<CharFA> EpsilonTransitions { get; } = new List<CharFA>();
+		
 		public bool IsFinal {
 			get { return 0 == Transitions.Count && 0 == EpsilonTransitions.Count; }
 		}
@@ -105,10 +102,11 @@ namespace LL
 			if (!result.Contains(this))
 			{
 				result.Add(this);
-				foreach (var fa in Transitions.Values)
-					fa.FillClosure(result);
-				foreach (var fa in EpsilonTransitions)
-					fa.FillClosure(result);
+				var tl = Transitions as IList<KeyValuePair<CharFA, ICollection<char>>>;
+				for (int ic=tl.Count,i=0;i<ic;++i)
+					tl[i].Key.FillClosure(result);
+				for(int ic=EpsilonTransitions.Count,i=0;i<ic;++i)
+					EpsilonTransitions[i].FillClosure(result);
 			}
 			return result;
 		}
@@ -121,10 +119,11 @@ namespace LL
 		{
 			if (null == result)
 				result = new List<CharFA>();
-			foreach (var fa in Transitions.Values)
-				fa.FillClosure(result);
-			foreach (var fa in EpsilonTransitions)
-				fa.FillClosure(result);
+			var tl = Transitions as IList<KeyValuePair<CharFA, ICollection<char>>>;
+			for (int ic = tl.Count, i = 0; i < ic; ++i)
+				tl[i].Key.FillClosure(result);
+			for (int ic = EpsilonTransitions.Count, i = 0; i < ic; ++i)
+				EpsilonTransitions[i].FillClosure(result);
 			return result;
 		}
 		/// <summary>
@@ -139,8 +138,8 @@ namespace LL
 			if (!result.Contains(this))
 			{
 				result.Add(this);
-				foreach (var fa in EpsilonTransitions)
-					fa.FillEpsilonClosure(result);
+				for (int ic = EpsilonTransitions.Count, i = 0; i < ic; ++i)
+					EpsilonTransitions[i].FillEpsilonClosure(result);
 			}
 			return result;
 		}
@@ -192,10 +191,91 @@ namespace LL
 					if (!(fa.IsNeutral || fa.IsFinal || (0 == fa.EpsilonTransitions.Count && 1 == fa.Transitions.Count)))
 						break;
 				}
-				return (i == ic);
+				return i == ic;
 			}
 		}
-		public CharFA ClonePath(CharFA to)
+		public bool IsDuplicate(CharFA rhs)
+		{
+			return null != rhs &&
+				AcceptingSymbol == rhs.AcceptingSymbol &&
+				_SetComparer.Default.Equals(EpsilonTransitions, rhs.EpsilonTransitions) &&
+				_SetComparer.Default.Equals((IDictionary<CharFA, ICollection<char>>)Transitions, (IDictionary<CharFA, ICollection<char>>)rhs.Transitions);
+		}
+		static IDictionary<CharFA, ICollection<CharFA>> _FillDuplicatesGroupedByState(IList<CharFA> closure,IDictionary<CharFA, ICollection<CharFA>> result=null)
+		{
+			if (null == result)
+				result = new Dictionary<CharFA, ICollection<CharFA>>();
+			var cl = closure;
+			int c = cl.Count;
+			for (int i = 0; i < c; i++)
+			{
+				var s = cl[i];
+				for (int j = i + 1; j < c; j++)
+				{
+					var cmp = cl[j];
+					if (s.IsDuplicate(cmp))
+					{
+						ICollection<CharFA> col = new List<CharFA>();
+						if (!result.ContainsKey(s))
+							result.Add(s, col);
+						else
+							col = result[s];
+						if (!col.Contains(cmp))
+							col.Add(cmp);
+					}
+				}
+			}
+			return result;
+		}
+		public void TrimDuplicates()
+		{
+			var lclosure = FillClosure();
+			var dups = new Dictionary<CharFA, ICollection<CharFA>>();
+			int oc = 0;
+			int c = -1;
+			while (c < oc)
+			{
+				c = lclosure.Count;
+				_FillDuplicatesGroupedByState(lclosure, dups);
+				if (0 < dups.Count)
+				{
+					foreach (KeyValuePair<CharFA, ICollection<CharFA>> de in dups)
+					{
+						var replacement = de.Key;
+						var targets = de.Value;
+						for (int i = 0; i < c; ++i)
+						{
+							var s = lclosure[i];
+
+							var repls = new List<KeyValuePair<CharFA, CharFA>>();
+							var td = (IDictionary<CharFA, ICollection<char>>)s.Transitions;
+							foreach (var trns in td)
+								if (targets.Contains(trns.Key))
+									repls.Add(new KeyValuePair<CharFA, CharFA>(trns.Key, replacement));
+							foreach (var repl in repls)
+							{
+								var inps = td[repl.Key];
+								td.Remove(repl.Key);
+								td.Add(repl.Value, inps);
+							}
+
+							int lc = s.EpsilonTransitions.Count;
+							for (int j = 0; j < lc; ++j)
+								if (targets.Contains(s.EpsilonTransitions[j]))
+									s.EpsilonTransitions[j] = de.Key;
+						}
+					}
+					dups.Clear();
+				}
+				else
+					break;
+				oc = c;
+				var f = lclosure[0];
+				lclosure = f.FillClosure();
+				c = lclosure.Count;
+			}
+		}
+		public CharFA ClonePathTo(CharFA to)
 		{
 			var closure = FillClosure();
 			var nclosure = new CharFA[closure.Count];
@@ -227,6 +307,46 @@ namespace LL
 			}
 			return nclosure[0];
 
+		}
+		public CharFA ClonePathToAny(IEnumerable<CharFA> to)
+		{
+			var closure = FillClosure();
+			var nclosure = new CharFA[closure.Count];
+			for (var i = 0; i < nclosure.Length; i++)
+			{
+				nclosure[i] = new CharFA();
+				nclosure[i].AcceptingSymbol = closure[i].AcceptingSymbol;
+			}
+			for (var i = 0; i < nclosure.Length; i++)
+			{
+				var t = nclosure[i].Transitions;
+				var e = nclosure[i].EpsilonTransitions;
+				foreach (var trns in closure[i].Transitions)
+				{
+					if (_ContainsAny(trns.Value.FillClosure(),to))
+					{
+						var id = closure.IndexOf(trns.Value);
+
+						t.Add(trns.Key, nclosure[id]);
+					}
+				}
+				foreach (var trns in closure[i].EpsilonTransitions)
+				{
+					if (_ContainsAny(trns.FillClosure(),to))
+					{
+						var id = closure.IndexOf(trns);
+						e.Add(nclosure[id]);
+					}
+				}
+			}
+			return nclosure[0];
+		}
+		bool _ContainsAny(ICollection<CharFA> col,IEnumerable<CharFA> any)
+		{
+			foreach (var fa in any)
+				if (col.Contains(fa))
+					return true;
+			return false;
 		}
 		public sealed class DotGraphOptions
 		{
@@ -975,7 +1095,7 @@ namespace LL
 			}
 			return result;
 		}
-		class _TrnsDic : IDictionary<char, CharFA>, IDictionary<CharFA, ICollection<char>>
+		class _TrnsDic : IDictionary<char, CharFA>, IDictionary<CharFA, ICollection<char>>,IList<KeyValuePair<CharFA,ICollection<char>>>
 		{
 			IDictionary<CharFA, ICollection<char>> _inner = new ListDictionary<CharFA, ICollection<char>>();
 
@@ -1145,11 +1265,13 @@ namespace LL
 					return result;
 				}
 			}
-
+			IList<KeyValuePair<CharFA,ICollection<char>>> _InnerList { get { return _inner as IList<KeyValuePair<CharFA, ICollection<char>>>; } }
 			ICollection<CharFA> IDictionary<CharFA, ICollection<char>>.Keys { get { return _inner.Keys; } }
 			ICollection<ICollection<char>> IDictionary<CharFA, ICollection<char>>.Values { get { return _inner.Values; } }
 			int ICollection<KeyValuePair<CharFA, ICollection<char>>>.Count { get { return _inner.Count; } }
 			public bool IsReadOnly { get { return _inner.IsReadOnly; } }
+
+			KeyValuePair<CharFA, ICollection<char>> IList<KeyValuePair<CharFA, ICollection<char>>>.this[int index] { get => _InnerList[index]; set { _InnerList[index] = value; } }
 
 			ICollection<char> IDictionary<CharFA, ICollection<char>>.this[CharFA key] { get { return _inner[key]; } set { _inner[key] = value; } }
 
@@ -1311,6 +1433,15 @@ namespace LL
 			{
 				return _inner.GetEnumerator();
 			}
+
+			int IList<KeyValuePair<CharFA, ICollection<char>>>.IndexOf(KeyValuePair<CharFA, ICollection<char>> item)
+				=> _InnerList.IndexOf(item);
+
+			void IList<KeyValuePair<CharFA, ICollection<char>>>.Insert(int index, KeyValuePair<CharFA, ICollection<char>> item)
+				=> _InnerList.Insert(index,item);
+
+			void IList<KeyValuePair<CharFA, ICollection<char>>>.RemoveAt(int index)
+				=> _InnerList.RemoveAt(index);
 		}
 		// compares several types of state collections or dictionaries used by FA
 		sealed class _SetComparer : IEqualityComparer<IList<CharFA>>, IEqualityComparer<ICollection<CharFA>>, IEqualityComparer<IDictionary<char, CharFA>>

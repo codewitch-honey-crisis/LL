@@ -10,7 +10,7 @@ namespace LL
 			var fa = CharFA.Parse("fu(ba+r|baz)","woo!");
 			var dfa = fa.ToDfa();
 			var closure = dfa.FillClosure();
-			var subset = closure[0].ClonePath(closure[5]);
+			var subset = closure[0].ClonePathTo(closure[5]);
 			subset.RenderToFile(@"..\..\..\fa.jpg");
 			Console.WriteLine(dfa.IsLiteral);
 			Console.WriteLine(subset.IsLiteral);

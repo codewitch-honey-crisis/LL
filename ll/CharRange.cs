@@ -131,10 +131,10 @@ namespace LL
 		public override string ToString()
 		{
 			if (First == Last)
-				return _CharToString(First);
+				return _Escape(First);
 			if (First + 1 == Last)
-				return string.Concat(_CharToString(First), _CharToString(Last));
-			return string.Concat(_CharToString(First),"-", _CharToString(Last));
+				return string.Concat(_Escape(First), _Escape(Last));
+			return string.Concat(_Escape(First),"-", _Escape(Last));
 		}
 		void _ThrowReadOnly()
 		{
@@ -202,8 +202,8 @@ namespace LL
 			_ThrowReadOnly();
 		}
 
-		#region _CharToString
-		string _CharToString(char ch)
+		#region _Escape
+		string _Escape(char ch)
 		{
 			switch(ch)
 			{
