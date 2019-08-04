@@ -12,7 +12,7 @@ namespace LL
 	public class DebugLL1Parser : Parser
 	{
 		Cfg _cfg;
-		ParseTable _parseTable;
+		CfgLL1ParseTable _parseTable;
 		IEnumerator<Token> _tokenEnum;
 		Token _errorToken;
 		Stack<string> _stack;
@@ -210,11 +210,11 @@ namespace LL
 					return true;
 				}
 				// non-terminal
-				IDictionary<string, ParseTableEntry> d;
+				IDictionary<string, CfgLL1ParseTableEntry> d;
 				
 				if(_parseTable.TryGetValue(sid, out d))
 				{
-					ParseTableEntry re;
+					CfgLL1ParseTableEntry re;
 					if(d.TryGetValue(_tokenEnum.Current.Symbol, out re))
 					{
 						_stack.Pop();
@@ -259,7 +259,7 @@ namespace LL
 			_errorToken.Line = _tokenEnum.Current.Line;
 			_errorToken.Position= _tokenEnum.Current.Position;
 			string s;
-			IDictionary<string, ParseTableEntry> d;
+			IDictionary<string, CfgLL1ParseTableEntry> d;
 			// check the parse table at the current row
 			if (_parseTable.TryGetValue(_stack.Peek(), out d))
 			{

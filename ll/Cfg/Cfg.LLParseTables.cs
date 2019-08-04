@@ -6,7 +6,7 @@ namespace LL
 {
 	partial class Cfg
 	{
-		public ParseTable ToLL1ParseTable()
+		public CfgLL1ParseTable ToLL1ParseTable()
 		{
 			// Here we populate the outer dictionary with one non-terminal for each key
 			// we populate each inner dictionary with the result terminals and associated 
@@ -17,17 +17,17 @@ namespace LL
 			var predict = FillPredict();
 			var follows = FillFollows();
 			var exmsgs = new List<CfgMessage>();
-			var result = new ParseTable();
+			var result = new CfgLL1ParseTable();
 			foreach (var nt in _EnumNonTerminals())
 			{
-				var d = new Dictionary<string, ParseTableEntry>();
+				var d = new Dictionary<string, CfgLL1ParseTableEntry>();
 				foreach (var f in predict[nt])
 					if (null != f.Symbol)
 					{
-						ParseTableEntry re;
+						CfgLL1ParseTableEntry re;
 						re.ConflictTable = null;
 						re.Rule = f.Rule;
-						ParseTableEntry or;
+						CfgLL1ParseTableEntry or;
 						if (d.TryGetValue(f.Symbol, out or))
 						{
 							exmsgs.Add(new CfgMessage(CfgErrorLevel.Error,1,
@@ -44,7 +44,7 @@ namespace LL
 						var ff = follows[nt];
 						foreach (var fe in ff)
 						{
-							ParseTableEntry or;
+							CfgLL1ParseTableEntry or;
 							if (d.TryGetValue(fe, out or))
 							{
 								// we can override conflict handling with the followsConflict
@@ -59,11 +59,11 @@ namespace LL
 											f.Rule,
 											fe)));
 								else if ("last" == fc)
-									d[fe] = new ParseTableEntry(f.Rule);
+									d[fe] = new CfgLL1ParseTableEntry(f.Rule);
 							}
 							else
 							{
-								d.Add(fe, new ParseTableEntry(f.Rule));
+								d.Add(fe, new CfgLL1ParseTableEntry(f.Rule));
 							}
 						}
 					}
@@ -73,14 +73,14 @@ namespace LL
 			CfgException.ThrowIfErrors(exmsgs);
 			return result;
 		}
-		ParseTable _MakeConflictTable(CfgRule left,CfgRule right,int index)
+		CfgLL1ParseTable _MakeConflictTable(CfgRule left,CfgRule right,int index)
 		{
-			var result = new ParseTable();
+			var result = new CfgLL1ParseTable();
 			throw new NotImplementedException();
 			//return result;
 		}
 		
-		public ParseTable ToLLkParseTable()
+		public CfgLL1ParseTable ToLLkParseTable()
 		{
 			// Here we populate the outer dictionary with one non-terminal for each key
 			// we populate each inner dictionary with the result terminals and associated 
@@ -92,14 +92,14 @@ namespace LL
 			// The parser can use these to further resolve conflicts.
 			var predict = FillPredict();
 			var follows = FillFollows();
-			var result = new ParseTable();
+			var result = new CfgLL1ParseTable();
 			foreach (var nt in _EnumNonTerminals())
 			{
-				var d = new Dictionary<string, ParseTableEntry>();
+				var d = new Dictionary<string, CfgLL1ParseTableEntry>();
 				foreach (var f in predict[nt])
 					if (null != f.Symbol)
 					{
-						ParseTableEntry or;
+						CfgLL1ParseTableEntry or;
 						if (d.TryGetValue(f.Symbol, out or))
 						{
 							if(null!=or.ConflictTable)
@@ -108,7 +108,7 @@ namespace LL
 							}
 							else if (null != or.Rule)
 							{
-								var pt = new ParseTable();
+								var pt = new CfgLL1ParseTable();
 								var dd = new Dictionary<string, CfgRule>();
 								
 								throw new CfgException(
@@ -131,7 +131,7 @@ namespace LL
 						var ff = follows[nt];
 						foreach (var fe in ff)
 						{
-							ParseTableEntry or;
+							CfgLL1ParseTableEntry or;
 							if (d.TryGetValue(fe, out or))
 							{
 								// we can override conflict handling with the followsConflict
@@ -146,11 +146,11 @@ namespace LL
 											f.Rule,
 											fe));
 								else if ("last" == fc)
-									d[fe] = new ParseTableEntry(f.Rule);
+									d[fe] = new CfgLL1ParseTableEntry(f.Rule);
 							}
 							else
 							{
-								d.Add(fe, new ParseTableEntry(f.Rule));
+								d.Add(fe, new CfgLL1ParseTableEntry(f.Rule));
 							}
 						}
 					}

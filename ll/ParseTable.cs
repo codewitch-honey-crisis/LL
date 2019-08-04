@@ -4,17 +4,17 @@ using System.Text;
 
 namespace LL
 {
-	public struct ParseTableEntry
+	public struct CfgLL1ParseTableEntry
 	{
 		public CfgRule Rule;
-		public ParseTable ConflictTable;
-		public ParseTableEntry(CfgRule rule,ParseTable conflictTable=null)
+		public CfgLL1ParseTable ConflictTable;
+		public CfgLL1ParseTableEntry(CfgRule rule,CfgLL1ParseTable conflictTable=null)
 		{
 			Rule = rule;
 			ConflictTable = conflictTable;
 		}
 	}
-	public class ParseTable : Dictionary<string,IDictionary<string,ParseTableEntry>>
+	public class CfgLL1ParseTable : Dictionary<string,IDictionary<string,CfgLL1ParseTableEntry>>
 	{
 		static string _MakeSafeCsv(string field)
 		{
@@ -50,8 +50,8 @@ namespace LL
 					if (!Equals("#ERROR", t))
 					{
 						sb.Append(",");
-						ParseTableEntry lr;
-						IDictionary<string, ParseTableEntry> d;
+						CfgLL1ParseTableEntry lr;
+						IDictionary<string, CfgLL1ParseTableEntry> d;
 						if(TryGetValue(nt,out d) && d.TryGetValue(t,out lr))
 						{
 							var r = lr.Rule;

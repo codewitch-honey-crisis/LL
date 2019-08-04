@@ -11,9 +11,8 @@ namespace LL
 	// (int Accept, (char[] Ranges, int Destination)[])
 	using CharDfaEntry = KeyValuePair<int, KeyValuePair<string, int>[]>;
 	/// <summary>
-	/// Represents a remedial bare bones "regular expression" engine.
+	/// Represents a simple FA based regular expression engine.
 	/// </summary>
-	/// <remarks>There's just enough here to make it work, not to make it fast or fancy.</remarks>
 	public class CharFA : ICloneable
 	{
 		public CharFA(string accepting = null)
@@ -193,6 +192,20 @@ namespace LL
 				}
 				return i == ic;
 			}
+		}
+		public IList<CharFA> FillAcceptingStates(IList<CharFA> result = null)
+		{
+			if (null == result)
+				result = new List<CharFA>();
+			var closure = FillClosure();
+			for(int ic=closure.Count,i=0;i<ic; ++i)
+			{
+				var fa = closure[i];
+				if (null != fa.AcceptingSymbol)
+					if (!result.Contains(fa))
+						result.Add(fa);
+			}
+			return result;
 		}
 		public bool IsDuplicate(CharFA rhs)
 		{
